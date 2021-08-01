@@ -1,7 +1,10 @@
 package com.changgou.goods.service;
 import com.changgou.goods.pojo.Sku;
+import com.changgou.order.pojo.OrderItem;
 import com.github.pagehelper.PageInfo;
 import java.util.List;
+import java.util.Map;
+
 /****
  * @Author:admin
  * @Description:Sku业务层接口
@@ -72,9 +75,15 @@ public interface SkuService {
     List<Sku> findByStatus(String status);
 
     /**
+     * 商品库存递减
+     * @param decrmap
+     */
+    void decrCount(Map<String, Integer> decrmap);
+
+    /**
      * 减少库存
      * @param orderItem  要减少库的订单选项( 有要买的商品的ID 和要买的商品的数量)
      * @return
      */
-    //int derCount(OrderItem orderItem);
+//    int derCount(OrderItem orderItem);
 }

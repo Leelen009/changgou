@@ -37,7 +37,7 @@ public class Page <T> implements Serializable{
 	}
 
 	/****
-	 *
+	 * 计算当前页
 	 * @param currentpage
 	 * @param total
 	 * @param pagesize
@@ -47,7 +47,7 @@ public class Page <T> implements Serializable{
 		long pagecount =  total/pagesize;
 
 		//如果整除表示正好分N页，如果不能整除在N页的基础上+1页
-		int totalPages = (int) (total%pagesize==0? total/pagesize : (total/pagesize)+1);
+		int totalPages = (int) (total%pagesize==0? pagecount : (total/pagesize)+1);
 
 		//总页数
 		this.last = totalPages;
@@ -75,10 +75,10 @@ public class Page <T> implements Serializable{
 
 	/****
 	 * 带有偏移量设置的分页
-	 * @param total
-	 * @param currentpage
-	 * @param pagesize
-	 * @param offsize
+	 * @param total 总记录数
+	 * @param currentpage 当前页
+	 * @param pagesize 每页显示多少条
+	 * @param offsize 全局偏移量
 	 */
 	public Page(long total,int currentpage,int pagesize,int offsize) {
 		this.offsize = offsize;
@@ -227,12 +227,13 @@ public class Page <T> implements Serializable{
 		this.list = list;
 	}
 
+	//测试
 	public static void main(String[] args) {
 			//总记录数
 			//当前页
 			//每页显示多少条
-			int cpage =17;
-			Page page = new Page(1001,cpage,50,7);
+			int cpage =10;
+			Page page = new Page(1001,cpage,50,5);
 			System.out.println("开始页:"+page.getLpage()+"__当前页："+page.getCurrentpage()+"__结束页"+page.getRpage()+"____总页数："+page.getLast());
 	}
 }

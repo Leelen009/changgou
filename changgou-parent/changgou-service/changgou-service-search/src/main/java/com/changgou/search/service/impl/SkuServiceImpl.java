@@ -27,6 +27,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.SearchResultMapper;
 import org.springframework.data.elasticsearch.core.aggregation.AggregatedPage;
 import org.springframework.data.elasticsearch.core.aggregation.impl.AggregatedPageImpl;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -101,8 +102,8 @@ public class SkuServiceImpl implements SkuService {
         }
 
         //规格查询
-        Map<String, Set<String>> specList = searchSpecList(nativeSearchQueryBuilder);
-        resultMap.put("specList", specList);
+        Map<String, Set<String>> specMap = searchSpecList(nativeSearchQueryBuilder);
+        resultMap.put("specMap", specMap);
 
         return resultMap;
     }
@@ -177,10 +178,10 @@ public class SkuServiceImpl implements SkuService {
         }
 
         //分页，用户如果不传入分页参数，则默认为第1页
-        Integer pageNum =coverterPage(searchMap);
+        Integer pageNumber =coverterPage(searchMap);
         //每页的数量，用户如果不传入数量参数，则默认为10
-        Integer size = coverterSize(searchMap);
-        nativeSearchQueryBuilder.withPageable(PageRequest.of(pageNum - 1, size));
+        Integer pageSize = coverterSize(searchMap);
+        nativeSearchQueryBuilder.withPageable(PageRequest.of(pageNumber - 1, pageSize));
 
         //将boolQueryBuilder填充给nativeSearchQueryBuilder
         nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
@@ -255,6 +256,12 @@ public class SkuServiceImpl implements SkuService {
                         }
                 );
 
+        //获取搜索封装信息
+        NativeSearchQuery query = nativeSearchQueryBuilder.build();
+        Pageable pageable = query.getPageable();
+        int pageSize = pageable.getPageSize();
+        int pageNumber = pageable.getPageNumber();
+
         //分页参数-总记录数
         long totalElements = page.getTotalElements();
         //总页数
@@ -266,6 +273,11 @@ public class SkuServiceImpl implements SkuService {
         resultMap.put("rows", contents);
         resultMap.put("total", totalElements);
         resultMap.put("totalPages", totalPages);
+
+        //分页数据
+        resultMap.put("pageSize", pageSize);
+        resultMap.put("pageNumber", pageNumber);
+
         return resultMap;
     }
 

@@ -1,0 +1,75 @@
+spring:
+  application:
+    name: gateway-web
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]': #匹配所有请求
+            allowedOrigins: "*" #跨域处理 允许所有的域
+            allowedMethods: #支持的方法
+              - GET
+              - POST
+              - PUT
+              - DELETE
+      routes:
+        #goods微服务
+        - id: changgou_goods_route
+          #用户请求需要路由到该服务[指定要路由的服务]
+          #uri: http://localhost:18081
+          #lb:使用LoadBalancerClient实现负载均衡，后面goods是微服务的名称
+          uri: lb://goods
+          #路由断言，路由规则配置
+          predicates:
+          #用户请求的域名规则配置，所有以cloud.ithema.com的请求都被路由http://localhost:18081
+          #- Host=cloud.itheima.com**
+          #所有以/brand开始的请求，都路由到http://localhost:18081微服务
+          - Path=/api/goods/**
+          #所有以/api/goods的请求，都被路由http://localhost:18081微服务
+          #希望该路径由微服务网关自动添加上/api前缀，每次请求真实微服务网关的时候，需要微服务网关将/api去掉
+          filters:
+          #将请求路径中的第一个路径去掉
+          - StripPrefix=1
+          #用户请求/**->/brand/**，添加/brand，并且将该请求路由到http://localhost:18081微服务
+          #- PrefixPath=/brand
+          #局部限流过滤器
+          - name: RequestRateLimiter #请求书限流，名字不能随便写，使用默认的facatory
+            args:
+              #用户身份唯一标识符
+              key-resolver: "#{@ipKeyResolver}"
+              #每秒钟只允许有1个请求
+              redis-rate-limiter.replenishRate: 1
+              #允许并发有4个请求【宽限的个数】
+              redis-rate-limiter.burstCapacity: 1
+        #user微服务
+        - id: changgou_user_route
+          uri: lb://user
+          #路由断言，路由规则配置
+          predicates:
+          - Path=/api/address/**,/api/areas/**,/api/cities/**,/api/provinces/**,/api/user/**
+          filters:
+          #将请求路径中的第一个路径去掉
+          - StripPrefix=1
+        #order微服务
+        - id: changgou_order_route
+          uri: lb://order
+          predicates:
+          - Path=/api/cart/**,/api/categoryReport/**,/api/orderConfig/**,/api/order/**,/api/orderItem/**,/api/orderLog/**,/api/preferential/**,/api/returnCause/**,/api/returnOrder/**,/api/returnOrderItem/**
+          filters:
+          - StripPrefix=1
+server:
+  port: 8001
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:7001/eureka
+  instance:
+    prefer-ip-address: true
+management:
+  endpoint:
+    gateway:
+      enabled: true
+    web:
+      exposure:
+        include: true
+

@@ -20,6 +20,10 @@
         <module>changgou-service-file</module>
         <module>changgou-service-canal</module>
         <module>changgou-service-search</module>
+        <module>changgou-service-user</module>
+        <module>changgou-service-order</module>
+        <module>changgou-service-pay</module>
+        <module>changgou-service-seckill</module>
     </modules>
 
     <dependencies>

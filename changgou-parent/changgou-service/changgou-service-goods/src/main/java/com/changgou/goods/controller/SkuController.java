@@ -8,6 +8,7 @@ import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 /****
  * @Author:admin
@@ -43,7 +44,7 @@ public class SkuController {
      * @param size:每页显示多少条
      * @return
      */
-    @GetMapping(value = "/search/{page}/{size}" )
+    @GetMapping(value = "/search/{page}/{size}")
     public Result<PageInfo> findPage(@PathVariable  int page, @PathVariable  int size){
         //调用SkuService实现分页查询Sku
         PageInfo<Sku> pageInfo = skuService.findPage(page, size);
@@ -55,7 +56,7 @@ public class SkuController {
      * @param sku
      * @return
      */
-    @PostMapping(value = "/search" )
+    @PostMapping(value = "/search")
     public Result<List<Sku>> findList(@RequestBody(required = false)  Sku sku){
         //调用SkuService实现条件查询Sku
         List<Sku> list = skuService.findList(sku);
@@ -81,7 +82,7 @@ public class SkuController {
      * @return
      */
     @PutMapping(value="/{id}")
-    public Result update(@RequestBody  Sku sku,@PathVariable Long id){
+    public Result update(@RequestBody Sku sku,@PathVariable Long id){
         //设置主键值
         sku.setId(id);
         //调用SkuService实现修改Sku
@@ -95,7 +96,7 @@ public class SkuController {
      * @return
      */
     @PostMapping
-    public Result add(@RequestBody   Sku sku){
+    public Result add(@RequestBody Sku sku){
         //调用SkuService实现添加Sku
         skuService.add(sku);
         return new Result(true,StatusCode.OK,"添加成功");
@@ -131,12 +132,18 @@ public class SkuController {
         return new Result<List<Sku>>(true,StatusCode.OK,"查询sku列表成功",skusList);
     }
 
-/*
-    @PostMapping(value = "/decr/count")
-    public Result decrCount(@RequestBody  OrderItem orderItem){
-        skuService.derCount(orderItem);
+    /**
+     * 商品信息递减
+     * @param decrmap key：商品id value：递减数量
+     * @return
+     */
+//    @PostMapping(value = "/decr/count")
+//    public Result decrCount(@RequestBody  OrderItem orderItem){
+//        skuService.derCount(orderItem);
+    @GetMapping(value="/decr/count")
+    public Result decrCount(@RequestParam Map<String, Integer> decrmap){
+        //调用Service实现递减
+        skuService.decrCount(decrmap);
         return new Result(true, StatusCode.OK, "减少库存成功");
     }
-
-*/
 }

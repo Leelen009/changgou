@@ -2,6 +2,7 @@ package com.changgou.goods.service.impl;
 import com.changgou.goods.dao.SkuMapper;
 import com.changgou.goods.pojo.Sku;
 import com.changgou.goods.service.SkuService;
+import com.changgou.order.pojo.OrderItem;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import tk.mybatis.mapper.entity.Example;
 import java.util.List;
+import java.util.Map;
+
 /****
  * @Author:admin
  * @Description:Sku业务层接口实现类
@@ -210,13 +213,42 @@ public class SkuServiceImpl implements SkuService {
         condition.setStatus(status);
         return skuMapper.select(condition);
     }
-/*
+
+    /**
+     * 商品库存递减
+     * @param decrmap
+     */
     @Override
-    public int derCount(OrderItem orderItem) {
-        int i = skuMapper.decrCount(orderItem);
-        if(i<=0){
-            throw new RuntimeException("减少库存失败");
+    public void decrCount(Map<String, Integer> decrmap) {
+        for(Map.Entry<String, Integer> entry : decrmap.entrySet()){
+            //商品id
+            Long id = Long.parseLong(entry.getKey());
+            //递减数量
+            Integer num = entry.getValue();
+
+            //多线程时会发生超卖现象
+//           Sku sku = skuMapper.selectByPrimaryKey(id);
+//           if(sku.getNum() >= num){
+//               //递减
+//               sku.setNum(sku.getNum() - num);
+//                skuMapper.updateByPrimaryKey(sku);
+//            }
+
+            //采用行级锁控制超卖 update tb.sku set num=num-#{num} where id=#{id} and num>=#{num}
+            //数据库中每条记录都拥有行级锁，此时只允许一个事务修改该记录
+            int count = skuMapper.decrCount(id, num);
+            if(count <= 0){
+                throw new RuntimeException("库存不足，请回滚！");
+            }
         }
-        return i;
-    }*/
+    }
+
+//    @Override
+//    public int derCount(OrderItem orderItem) {
+//        int i = skuMapper.decrCount(orderItem);
+//        if(i<=0){
+//            throw new RuntimeException("减少库存失败");
+//        }
+//        return i;
+//    }
 }
